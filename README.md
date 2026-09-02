@@ -12,14 +12,11 @@ third-party image rights — every chart and illustration is original vector wor
 
 ## Publishing this on GitHub Pages
 
-```bash
-git remote add origin https://github.com/<your-username>/the-mountain-that-fell.git
-git push -u origin main
-```
+The repository is <https://github.com/sureshcyadav/flashfloodnepal>.
 
-Then in the repository: **Settings → Pages → Build and deployment → Source: Deploy from a
+In the repository: **Settings → Pages → Build and deployment → Source: Deploy from a
 branch**, branch `main`, folder `/ (root)`. The site appears at
-`https://<your-username>.github.io/the-mountain-that-fell/` within a minute or two.
+<https://sureshcyadav.github.io/flashfloodnepal/> within a minute or two.
 
 `.nojekyll` is included so GitHub serves the files as-is rather than running them through
 Jekyll.
