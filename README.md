@@ -5,8 +5,11 @@
 A data investigation into emissions, responsibility, and the Himalayan debris flow that
 killed more than a thousand people in a country responsible for 0.04% of global fossil CO₂.
 
-Published as a single self-contained HTML file. No build step, no dependencies, no
-third-party image rights — every chart and illustration is original vector work.
+Live at **<https://flashfloodnepal.com>**.
+
+The report is one self-contained HTML file alongside a social card and icons. No build
+step, no dependencies, no third-party image rights — every chart, illustration and icon is
+original vector work.
 
 ---
 
@@ -28,10 +31,18 @@ Add a `CNAME` file containing the domain, then point a `CNAME` DNS record at
 
 ---
 
-## What's in the file
+## What's in the repo
 
-`index.html` is the whole site — roughly 143 KB, self-contained apart from two Google Fonts
-(Archivo and Source Serif 4), which degrade to system serif/sans if unavailable.
+| File | What it is |
+| --- | --- |
+| `index.html` | the whole report, ~149 KB, self-contained apart from two Google Fonts (Archivo and Source Serif 4), which degrade to system serif/sans if unavailable |
+| `og.png` | 1200×630 social card for Facebook, LinkedIn, X, Slack, WhatsApp |
+| `favicon.svg` | primary icon, crisp at any size |
+| `favicon.ico` | 16/32/48 fallback for older browsers and `/favicon.ico` probes |
+| `favicon-32.png` · `apple-touch-icon.png` | PNG fallback and iOS home-screen icon |
+| `CNAME` | the custom domain; deleting it unsets it in GitHub Pages |
+
+The card and icons are generated, not hand-drawn — see **Regenerating the social card** below.
 
 ### The report
 
@@ -82,6 +93,23 @@ published with a district-level breakdown. The ribbon at the top of the page car
 casualty numbers.**
 
 ---
+
+## Regenerating the social card
+
+```bash
+pip install pillow
+python tools/make-images.py
+```
+
+Rebuilds `og.png` and all four icons from the palette and mountain geometry in
+`tools/make-images.py`. It fetches the Archivo TTFs from Google Fonts on first run into
+`tools/.fonts` (gitignored), so the card uses the same typeface as the page.
+
+**If you change `og.png`, bump the `?v=` number** on the `og:image` and `twitter:image`
+tags in `index.html`. Facebook, LinkedIn, X and Slack cache social cards hard and will
+otherwise keep serving the old one for weeks. You can also force a re-fetch through
+[Facebook's Sharing Debugger](https://developers.facebook.com/tools/debug/) and
+[LinkedIn's Post Inspector](https://www.linkedin.com/post-inspector/).
 
 ## Local preview
 
