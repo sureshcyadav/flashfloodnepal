@@ -167,6 +167,32 @@ footer strong{color:#E6EEEF}
    ENHANCEMENT LAYER - motion, navigation, interactive instruments
    ================================================================ */
 
+/* ---- wide-screen balance ---------------------------------------------
+   The original layout hangs the 36rem text column on the LEFT edge of a
+   centred 62rem wrap, so on anything wider than about 1400px the right
+   third of every prose passage is dead space. Give every constrained
+   block auto side margins so the text, the pull quotes, the tables and
+   the figures all share one centre axis. figure.bleed is excluded - it
+   relies on negative margins to span the viewport. Scoped to <section>
+   so the hero overlay, whose headline is not a constrained child, keeps
+   its own left-aligned composition. */
+section .wrap > p, section .wrap > h2, section .wrap > h3, section .wrap > h4,
+section .wrap > ul, section .wrap > ol, section .wrap > .chapno, section .wrap > .dek,
+section .wrap > .pull, section .wrap > .side, section .wrap > .stats, section .wrap > .tbl,
+section .wrap > .srcs, section .wrap > .credit, section .wrap > .tools,
+section .wrap > .iv, section .wrap > figure:not(.bleed){
+  margin-left:auto; margin-right:auto;
+}
+figcaption{margin-left:auto;margin-right:auto}
+/* these two carry inline margin:0 in the markup */
+.dateline p, footer p{margin-left:auto!important;margin-right:auto!important}
+
+/* a little more presence on large monitors */
+@media (min-width:1560px){
+  :root{--wide:68rem;--measure:38rem}
+  body{font-size:20.5px}
+}
+
 /* ---- reveal system ---------------------------------------------------- */
 .rv{opacity:0;transform:translateY(24px);
     transition:opacity .78s cubic-bezier(.22,.72,.28,1),transform .78s cubic-bezier(.22,.72,.28,1)}
@@ -222,7 +248,9 @@ html:not(.js) .rv{opacity:1;transform:none}
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid #22343D;
   transform:translateY(-102%);transition:transform .42s cubic-bezier(.3,.8,.3,1)}
 .nav.show{transform:none}
-.nav .in{max-width:62rem;margin:0 auto;padding:.6rem 1.5rem;display:flex;align-items:center;gap:1.1rem}
+/* wider than the article column so all ten chapters fit without the strip
+   scrolling and clipping the first link */
+.nav .in{max-width:78rem;margin:0 auto;padding:.6rem 1.5rem;display:flex;align-items:center;gap:1.1rem}
 .nav .ttl{font:800 .78rem/1 "Archivo",sans-serif;color:#E6EEEF;white-space:nowrap;letter-spacing:-.01em}
 .nav nav{flex:1;display:flex;gap:.1rem;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
 .nav nav::-webkit-scrollbar{display:none}
@@ -253,14 +281,14 @@ html{scroll-padding-top:4rem}
 
 /* ---- live-update ribbon ---------------------------------------------- */
 .ribbon{background:var(--red);color:#fff;font:600 .79rem/1.45 "Archivo",sans-serif;padding:.62rem 0}
-.ribbon .wrap{display:flex;gap:.7rem;align-items:baseline;flex-wrap:wrap;max-width:62rem}
+.ribbon .wrap{display:flex;gap:.7rem;align-items:baseline;flex-wrap:wrap;max-width:var(--wide)}
 .ribbon b{font-weight:800;letter-spacing:.06em;font-size:.68rem;
   border:1px solid rgba(255,255,255,.5);padding:.16rem .42rem;border-radius:2px;white-space:nowrap}
 .ribbon i{font-style:normal;opacity:.82}
 
 /* ---- interactive instrument shell ------------------------------------ */
 .iv{background:var(--ink);color:#D8E2E4;border:1px solid #2A3E47;border-top:3px solid var(--red);
-  padding:1.5rem 1.4rem 1.4rem;margin:2.9rem 0;max-width:62rem;
+  padding:1.5rem 1.4rem 1.4rem;margin:2.9rem 0;max-width:var(--wide);
   font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
 section.dark .iv{background:#16252D}
 .iv h4{font-size:.71rem;letter-spacing:.11em;font-weight:800;color:var(--red-2);margin:0 0 .35rem}
@@ -369,6 +397,30 @@ section.dark .tools button:hover{color:#fff;border-color:#5B93A8}
   background:var(--ink);color:#F2F7F7;font:700 .78rem/1 "Archivo",sans-serif;padding:.8rem 1.1rem;
   border-radius:4px;border:1px solid #2F454F;transition:transform .35s cubic-bezier(.2,.9,.3,1)}
 .toast.show{transform:translate(-50%,0)}
+
+/* ---- charts on small screens -----------------------------------------
+   A 1000-unit-wide chart squeezed into 327px renders its axis labels at
+   about 3.5px. Below 760px the chart scrolls inside its own container at
+   a legible minimum width instead of shrinking. */
+.figscroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+@media (max-width:760px){ .figscroll > svg{min-width:640px} .figscroll{padding-bottom:.4rem} }
+/* the hint is toggled by script when a chart actually overflows, rather than
+   guessed from a breakpoint - the two do not line up on every device */
+.swipe{display:none;font:600 .68rem/1.4 "Archivo",sans-serif;color:var(--ink-3);
+  margin:.45rem 0 0;letter-spacing:.02em}
+.swipe.on{display:block}
+section.dark .swipe{color:#6C818A}
+
+/* 100vw includes the classic scrollbar while the content box does not, so a
+   full-bleed figure overflows the page by the scrollbar's width. --sbw is
+   measured in script. Scoped above 640px, where .bleed is disabled anyway. */
+@media (min-width:641px){
+  figure.bleed{
+    margin-left:calc(50% - 50vw + var(--sbw,0px) / 2);
+    margin-right:calc(50% - 50vw + var(--sbw,0px) / 2);
+    max-width:calc(100vw - var(--sbw,0px));
+  }
+}
 
 /* ---- figure zoom ------------------------------------------------------ */
 figure svg{overflow:visible}
@@ -1424,13 +1476,15 @@ var nf = function(n,d){return n.toLocaleString('en-US',{minimumFractionDigits:d|
 
 /* ============================================================ 1. REVEAL */
 var revealed = function(el){el.classList.add('in')};
+/* run an element's build callback exactly once, whatever triggered it */
+function fire(el){ if(el.__shown) return; el.__shown=true; if(el.__onshow) el.__onshow(); }
 var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){
   es.forEach(function(e){ if(e.isIntersecting){ revealed(e.target); io.unobserve(e.target);
-    if(e.target.__onshow) e.target.__onshow(); } });
+    fire(e.target); } });
 },{rootMargin:'0px 0px -12% 0px',threshold:.08}) : null;
 
 function watch(el,cb){ if(cb) el.__onshow = cb;
-  if(!io || RM){ revealed(el); if(cb) cb(); return; }
+  if(!io || RM){ revealed(el); fire(el); return; }
   io.observe(el); }
 
 /* mark editorial blocks for reveal */
@@ -1440,8 +1494,37 @@ $$('section > .wrap > *').forEach(function(el,i){
 });
 $$('.kgrid .kbox').forEach(function(el,i){el.classList.add('rv','rv-d'+((i%6)+1))});
 $$('.rv').forEach(function(el){watch(el)});
-/* safety net: nothing stays invisible */
-setTimeout(function(){$$('.rv').forEach(revealed)},4000);
+/* Safety net. Also fires the build callbacks: a fast flick down a long page
+   can outrun IntersectionObserver, which would otherwise leave a module
+   revealed but permanently empty. */
+setTimeout(function(){$$('.rv').forEach(function(el){revealed(el);fire(el)})},4000);
+
+/* ======================================= 1b. SMALL-SCREEN CHART SCROLL */
+/* Wrap every chart SVG so narrow screens can scroll it at a legible size
+   rather than shrinking the labels into illegibility (see .figscroll). */
+$$('figure svg').forEach(function(svg){
+  var box=document.createElement('div'); box.className='figscroll';
+  svg.parentNode.insertBefore(box,svg); box.appendChild(svg);
+  var hint=document.createElement('span');
+  hint.className='swipe'; hint.textContent='Swipe the chart sideways to see all of it →';
+  box.parentNode.insertBefore(hint,box.nextSibling);
+});
+/* publish the scrollbar width so full-bleed figures can subtract it, and
+   show a swipe hint only on charts that genuinely overflow */
+function measure(){
+  document.documentElement.style.setProperty('--sbw',
+    (window.innerWidth-document.documentElement.clientWidth)+'px');
+  $$('.figscroll').forEach(function(b){
+    var h=b.nextElementSibling;
+    if(h && h.classList.contains('swipe'))
+      h.classList.toggle('on', b.scrollWidth>b.clientWidth+2);
+  });
+}
+measure();
+window.addEventListener('resize',measure);
+window.addEventListener('load',measure);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
+setTimeout(measure,1200);
 
 /* ============================================================ 2. CHARTS */
 function animateFigure(fig){
@@ -1632,6 +1715,8 @@ $$('.kbox .n, .stat .n').forEach(function(el){
 (function clock(){
   var box=$('#ivClock'); if(!box) return;
   var W=38.1e9/31557600, N=16e6/31557600, NEPAL_YEAR=16e6;
+  /* t0 is page load, not first view - the panel says the counters started
+     the moment the page loaded, so they must actually do that */
   var t0=Date.now(), elW=$('#clkW'), elN=$('#clkN'), elT=$('#clkEl'),
       fw=$('#clkFw'), fn=$('#clkFn'), ny=$('#clkNy');
   function pad(n){return (n<10?'0':'')+n}
@@ -1653,7 +1738,7 @@ $$('.kbox .n, .stat .n').forEach(function(el){
         ' since you opened this page, plus '+pct.toFixed(2)+'% of another';
     requestAnimationFrame(tick);
   }
-  watch(box,function(){ t0=Date.now(); tick(); });
+  watch(box,function(){ tick(); });
 })();
 
 /* ============================================================ 7. DOT GRID */
@@ -1872,7 +1957,15 @@ $$('.kbox .n, .stat .n').forEach(function(el){
     })(t0);
   }
   btn.onclick=run;
-  watch(box,function(){ set(0); if(!RM) setTimeout(run,650); });
+  watch(box,function(){ set(0) });
+  /* autoplay on a separate observer so it only ever fires when the module is
+     genuinely on screen - the reveal safety net can fire callbacks blind */
+  if(!RM && 'IntersectionObserver' in window){
+    var pio=new IntersectionObserver(function(e){
+      if(e[0].isIntersecting){ pio.disconnect(); setTimeout(run,650) }
+    },{threshold:.35});
+    pio.observe(box);
+  }
 })();
 
 /* ============================================================ 11. LIGHTBOX */
