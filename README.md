@@ -36,7 +36,9 @@ Add a `CNAME` file containing the domain, then point a `CNAME` DNS record at
 | File | What it is |
 | --- | --- |
 | `index.html` | the whole report, ~149 KB, self-contained apart from two Google Fonts (Archivo and Source Serif 4), which degrade to system serif/sans if unavailable |
-| `og.png` | 1200×630 social card for Facebook, LinkedIn, X, Slack, WhatsApp |
+| `og.png` | 1200×630 link card for Facebook, LinkedIn, X, Slack, WhatsApp |
+| `og-instagram.png` | 1080×1350 portrait for the Instagram feed |
+| `og-story.png` | 1080×1920 for Instagram and Facebook stories, with the lower third left clear for a link sticker |
 | `favicon.svg` | primary icon, crisp at any size |
 | `favicon.ico` | 16/32/48 fallback for older browsers and `/favicon.ico` probes |
 | `favicon-32.png` · `apple-touch-icon.png` | PNG fallback and iOS home-screen icon |
@@ -101,9 +103,16 @@ pip install pillow
 python tools/make-images.py
 ```
 
-Rebuilds `og.png` and all four icons from the palette and mountain geometry in
-`tools/make-images.py`. It fetches the Archivo TTFs from Google Fonts on first run into
-`tools/.fonts` (gitignored), so the card uses the same typeface as the page.
+Rebuilds all three social images and all four icons from the palette and mountain geometry
+in `tools/make-images.py`. It fetches the Archivo TTFs from Google Fonts on first run into
+`tools/.fonts` (gitignored), so the cards use the same typeface as the page.
+
+Only `og.png` is referenced by the page's meta tags. The two Instagram images are hosted so
+they can be saved straight to a phone from
+<https://flashfloodnepal.com/og-instagram.png> and
+<https://flashfloodnepal.com/og-story.png> — Instagram only posts from mobile, and
+Instagram ignores Open Graph tags entirely. Both carry the domain as printed text because
+Instagram does not make links in captions clickable.
 
 **If you change `og.png`, bump the `?v=` number** on the `og:image` and `twitter:image`
 tags in `index.html`. Facebook, LinkedIn, X and Slack cache social cards hard and will
